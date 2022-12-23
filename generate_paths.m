@@ -104,5 +104,7 @@ hold on
 
 % path the model took
 scatter(taken_x, taken_y, 200*abs(taken_omega)+0.000001, taken_velocity+1, 'filled');
+    % color = speed
+    % size of the marker = absolute size of the angle
 % fixating the axes
 axis([0 40 -1 1])
