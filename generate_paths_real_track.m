@@ -16,7 +16,7 @@ out_y = outerConePosition(:,2);
 w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 
 keySet = ["tau", "width", "steps", "global_steps"];
-valueSet = [0.01 w 70 100];
+valueSet = [0.01 w 55 2500];
 constant = containers.Map(keySet,valueSet);
 
 % generating track
@@ -61,6 +61,8 @@ last_index = 0;
 for a = 2:constant("global_steps")
     global best
     best = -1;
+    search_from = taken_best(a-1);
+    last_index = find_closest_point_on_the_line([start_x, start_y], test_path_x, test_path_y, last_index);
     for velocity = 5:12 % try velocities
         for angle = -10:10 % try angles
 
@@ -75,7 +77,8 @@ for a = 2:constant("global_steps")
 
                 valid = path_checking(path_x, path_y, test_path_x, test_path_y, last_index, constant("width"));
                 if valid == true % if valid, take find closest point to the last point
-                    [progress, distance] = find_closest_point_on_the_line([path_x(constant("steps")), path_y(constant("steps"))], test_path_x, test_path_y, last_index);
+%                     [progress, distance] = find_closest_point_on_the_line([path_x(constant("steps")), path_y(constant("steps"))], test_path_x, test_path_y, last_index);
+                [progress, distance] = find_fast([path_x(constant("steps")), path_y(constant("steps"))], test_path_x, test_path_y, search_from);
                     if progress > best % update maximum
                         best = progress;
                         best_v = velocity;
