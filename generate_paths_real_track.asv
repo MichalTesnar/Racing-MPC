@@ -15,8 +15,8 @@ out_x = outerConePosition(:,1);
 out_y = outerConePosition(:,2);
 w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 
-keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "maximum_steer"];
-valueSet = [0.01 w 65 2000 2 15 2 2 10 20];
+keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake"];
+valueSet = [0.01 w 65 2000 2 15 2 2];
 constant = containers.Map(keySet,valueSet);
 
 % generating track
@@ -65,9 +65,9 @@ for a = 2:constant("global_steps")
     search_from = taken_best(a-1);
     last_index = find_closest_point_on_the_line([start_x, start_y], test_path_x, test_path_y, last_index);
     for velocity = max(start_velocity-constant("max_brake"), constant("min_speed")):min(start_velocity + constant("max_acceleration"), constant("max_speed")) % try velocities
-        for angle = max(-constant("maximum_steer"), start_theta - constant("steer_change")):min(constant("maximum_steer"), start_theta + constant("steer_change")) % try angles
+        for angle = start_theta-5:start5 % try angles
             % tuning by division
-            omega = angle/10;
+            omega = angle/5;
             
             % constraint the lateral acceleration
             if omega*velocity < 4 % lateral_acceleration = omega*velocity;
