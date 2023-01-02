@@ -6,7 +6,7 @@ outerConePosition = [8.29483356036796,47.8005083348189;10.2903642978411,47.86590
 
 
 keySet = ["tau", "width", "steps", "global_steps"];
-valueSet = [0.01 0.2 60 300];
+valueSet = [0.01 0.2 50 200];
 constant = containers.Map(keySet,valueSet);
 
 % generating track
@@ -57,8 +57,7 @@ for a = 2:constant("global_steps")
     global best
     best = -1;
     search_from = taken_best(a-1);
-    last_index = find_closest_point_on_the_line([start_x, start_y], test_path_x, test_path_y, last_index);
-%     last_index
+    last_index = find_closest_point_on_the_line([path_x(constant("steps")), path_y(constant("steps"))], test_path_x, test_path_y, search_from);
     for velocity = 5:15 % try velocities
         for angle = -10:10 % try angles
 
@@ -101,8 +100,6 @@ for a = 2:constant("global_steps")
     taken_velocity(a) = best_v;
     taken_best(a) = best;
 end
-
-taken_best
 
 % plotting all the curves
 figure

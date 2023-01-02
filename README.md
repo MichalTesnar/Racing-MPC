@@ -4,3 +4,8 @@ In this project, we are trying to utilize model predictive control in order to m
 
 ## What to run?
 Currently you can directly execute the file $\texttt{generate_paths.m}$ and all the magic should happen.
+
+## Mentions & Contributions
+This project is part of Honours College of Rijksuniversiteit Groningen, carried out as a second-year project.
+author: Michal Tešnar
+supervisors: Bart Besselink, Bahadir Saltik

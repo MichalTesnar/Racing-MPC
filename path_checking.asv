@@ -7,11 +7,16 @@ function valid = path_checking(pathx, pathy, xp, yp, last_index, width)
 % the track
     saved = 0;
     valid = true;
-    for idx = 1:length(pathx)
-        [index, dist] = find_fast([pathx(idx) pathy(idx)], xp, yp, last_index);
+%     for idx = 1:length(pathx)
+%         [index, dist] = find_fast([pathx(idx) pathy(idx)], xp, yp, last_index);
+%         if dist > width/2
+%             valid = false;
+%             return
+%         end
+%     end
+    [index, dist] = find_fast([pathx(end) pathy(end)], xp, yp, last_index);
         if dist > width/2
             valid = false;
             return
         end
-    end
 end
