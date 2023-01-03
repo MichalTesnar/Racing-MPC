@@ -1,7 +1,5 @@
 # Work it harder, make it better...
 
-- do parameter search base on how far along the track we go
-- do more constants and stuff
-- make constants real
+- make constants real: lateral acceleration?
 
 # ... our work is never over.

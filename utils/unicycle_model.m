@@ -1,5 +1,4 @@
-
-
+% unicycle model function to 'predict the future' movement of the model
 function [positions_x, positions_y, positions_theta] = unicycle_model(velocity, omega, current_x, current_y, current_theta, k, tau)
     % initiate arrays for future positions and angle
     positions_x = double(zeros(k));
