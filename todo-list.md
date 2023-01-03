@@ -2,6 +2,6 @@
 
 - do parameter search base on how far along the track we go
 - do more constants and stuff
-- speed & turning angle relation
+- make constants real
 
 # ... our work is never over.

@@ -15,8 +15,8 @@ out_x = outerConePosition(:,1);
 out_y = outerConePosition(:,2);
 w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 
-keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "maximum_steer"];
-valueSet = [0.01 w 65 2000 2 15 2 2 10 20];
+keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration"];
+valueSet = [0.01 w 65 2500 2 15 2 2 5 6];
 constant = containers.Map(keySet,valueSet);
 
 % generating track
@@ -64,17 +64,14 @@ for a = 2:constant("global_steps")
     best = -1;
     search_from = taken_best(a-1);
     last_index = find_closest_point_on_the_line([start_x, start_y], test_path_x, test_path_y, last_index);
+    % pick velocity between limits and by braking and speeding up
     for velocity = max(start_velocity-constant("max_brake"), constant("min_speed")):min(start_velocity + constant("max_acceleration"), constant("max_speed")) % try velocities
-        for angle = max(-constant("maximum_steer"), start_theta - constant("steer_change")):min(constant("maximum_steer"), start_theta + constant("steer_change")) % try angles
-            % tuning by division
-            omega = angle/10;
-            
-            % constraint the lateral acceleration
-            if omega*velocity < 4 % lateral_acceleration = omega*velocity;
+        % pick steering angle constrained by maximum lateral acceleration
+        % maximum_lateral_acceleration > omega*velocity <=> |omega| < maximum_lateral_acceleration/velocity;
+        for omega = (max(-round(constant("lateral_acceleration")/velocity), start_theta - constant("steer_change")):min(round(constant("lateral_acceleration")/velocity), start_theta + constant("steer_change"))) % try angles
+
                 % let the model move in that way
                 [path_x, path_y, ~] = unicycle_model(velocity, omega, start_x, start_y, start_theta, constant("steps"), constant("tau"));
-                
-
                 valid = path_checking(path_x, path_y, test_path_x, test_path_y, last_index, constant("width"));
                 if valid == true % if valid, take find closest point to the last point
 %                     [progress, distance] = find_closest_point_on_the_line([path_x(constant("steps")), path_y(constant("steps"))], test_path_x, test_path_y, last_index);
@@ -87,7 +84,7 @@ for a = 2:constant("global_steps")
                         best_y = path_y;
                     end
                 end
-            end
+%             end
         end
     end
     
@@ -123,7 +120,7 @@ plot(outerConePosition(:,1),outerConePosition(:,2),'bl','MarkerSize',5)
 hold on
 
 % path the model took
-scatter(taken_x, taken_y, 100*abs(taken_omega)+0.000001, taken_velocity+1, 'filled');
+scatter(taken_x, taken_y, 35*abs(taken_omega)+10, taken_velocity+1, 'filled');
 % scatter(taken_x, taken_y, 200, taken_velocity+1, 'filled');
     % color = speed
     % size of the marker = absolute size of the angle
