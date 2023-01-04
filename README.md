@@ -9,3 +9,5 @@ Currently you can directly execute the file $\texttt{generate_paths_real_track.m
 This project is part of Honours College of Rijksuniversiteit Groningen, carried out as a second-year project.
 author: Michal Tešnar
 supervisors: Bart Besselink, Bahadir Saltik
+
+honorable mentions: Jiri Kosinka, for quick consultations
