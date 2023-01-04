@@ -18,10 +18,11 @@ w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 % constants hashmap
 % top speed 100 km/h = 28 m/s
 % acceleration 0-28 ms in 5 seconds -> 5 m/s^2, brake same
-% steering change 45 degrees: pi/4, multiplied and divided by 10 to have more granularity
+% steering maximum 45 degrees: pi/4, multiplied and divided by 10 to have more granularity
+% steering change: maximum pi/8 per step
 % lateral acceleration: to be determined
-keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration"];
-valueSet = [0.01  w         50       2000            1                28         5                   5            10*pi/4              400];
+keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer"];
+valueSet = [0.01  w         60       1500            1                28         2                   2            10*pi/8              10000          10*pi/4];
 constant = containers.Map(keySet, valueSet);
 
 % generating track
@@ -54,7 +55,7 @@ taken_y = zeros(constant("global_steps"), 1);
 taken_y(1) = start_y;
 global taken_omega;
 taken_omega = zeros(constant("global_steps"), 1);
-taken_omega(1) = 0;
+taken_omega(1) = best_omega;
 global taken_velocity;
 taken_velocity = zeros(constant("global_steps"), 1);
 taken_velocity(1) = start_velocity;
@@ -72,8 +73,9 @@ for a = 2:constant("global_steps")
     % pick velocity between limits and by braking and speeding up
     for velocity = max(start_velocity-constant("max_brake"), constant("min_speed")):min(start_velocity + constant("max_acceleration"), constant("max_speed")) % try velocities
         % pick steering angle constrained by maximum lateral acceleration
-        % maximum_lateral_acceleration > omega*velocity <=> |omega| < maximum_lateral_acceleration/velocity;
-        for omega = (max(-round(constant("lateral_acceleration")/velocity), -constant("steer_change")):min(round(constant("lateral_acceleration")/velocity), constant("steer_change")))/10 % try angles
+        % maximum_lateral_acceleration > omega*velocity <=> |omega| < maximum_lateral_acceleration/velocity
+            % also constrained by the possible rate of change and maximum range of steering
+        for omega = (max([-round(constant("lateral_acceleration")/velocity), -constant("max_steer"), taken_omega(a-1) - constant("steer_change")]):min([round(constant("lateral_acceleration")/velocity), taken_omega(a-1)*10 + constant("steer_change"), constant("max_steer")]))/10 % try angles
 %             max(-round(constant("lateral_acceleration")/velocity), start_theta - constant("steer_change")):min(round(constant("lateral_acceleration")/velocity), start_theta + constant("steer_change"))
             % predict model movement
             [path_x, path_y, ~] = unicycle_model(velocity, omega, start_x, start_y, start_theta, constant("steps"), constant("tau"));
@@ -126,4 +128,4 @@ plot(outerConePosition(:,1),outerConePosition(:,2),'bl','MarkerSize',5)
 hold on
 
 % path the model took: color = speed, size = change in angle
-scatter(taken_x, taken_y, 35*abs(taken_omega)+1, taken_velocity+1, 'filled');
+scatter(taken_x, taken_y, 60*abs(taken_omega)+1, taken_velocity+1, 'filled');
