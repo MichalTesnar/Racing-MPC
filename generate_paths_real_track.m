@@ -22,7 +22,7 @@ w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 % steering change: maximum pi/8 per step
 % lateral acceleration: to be determined
 keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer"];
-valueSet = [0.01  w         60       1500            1                28         2                   2            10*pi/8              10000          10*pi/4];
+valueSet = [0.01  w         60       500            1                28         5                   5            10*pi/8              10000          10*pi/4];
 constant = containers.Map(keySet, valueSet);
 
 % generating track
