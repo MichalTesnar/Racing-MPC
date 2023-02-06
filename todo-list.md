@@ -1,16 +1,15 @@
 # Work it harder, make it better...
 ## To-do list
-- steering: balancing constanst / tuning the parameters
+- steering: balancing constansts / tuning the parameters
     - maximum steering angle at one time
     - maximum rate of change of steering at one step
     - lateral acceleration
 - fixating constants for car and developing a metric for performance
     - fixating the number of steps to measure how far it can go
+
 - acceleration instead of speed
 - more complicated search profile in v and omega
     - combination of shorter search horizons
-- different representation of the track
-    - Kosinka's grid of distance and progress
 - start documentation
     
 ## To implement later
