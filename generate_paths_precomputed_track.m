@@ -24,7 +24,7 @@ w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 % steering change: maximum pi/8 per step
 % lateral acceleration: to be determined
 keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer"];
-valueSet = [0.01  w         60       1500            1                24         5                   5            10*pi/4              100000          10*pi/2];
+valueSet = [0.01  w         60       2000            1                24         5                   5            10*pi/4              100000          10*pi/2];
 constant = containers.Map(keySet, valueSet);
 
 % generating track
@@ -35,33 +35,24 @@ start_x = (in_x(1)+out_x(1))/2;
 start_y = (in_y(1)+out_y(1))/2;
 start_theta = 0;
 start_velocity = 0;
+start_a = 0;
 
 % temporary variables to keep track of the progress
-global best; % best progress along the line
-best = 0;
-global best_v; % best velocity to take
-best_v = 0;
-global best_omega % best omega to take
-best_omega = 0;
-global best_x; % best path we have taken in x coordinates
-best_x = double(zeros(constant("steps"), 1));
-global best_y; % best path we have taken in y coordinates
-best_y = double(zeros(constant("steps"), 1));
+best = 0; % best progress along the line
+best_v = 0; % best velocity to take
+best_omega = 0; % best omega to take
+best_x = double(zeros(constant("steps"), 1)); % best path we have taken in x coordinates
+best_y = double(zeros(constant("steps"), 1)); % best path we have taken in y coordinates
 
 % storing the path we actually took by taking the first step
-global taken_x;
 taken_x = zeros(constant("global_steps"), 1);
 taken_x(1) = start_x;
-global taken_y;
 taken_y = zeros(constant("global_steps"), 1);
 taken_y(1) = start_y;
-global taken_omega;
 taken_omega = zeros(constant("global_steps"), 1);
 taken_omega(1) = best_omega;
-global taken_velocity;
 taken_velocity = zeros(constant("global_steps"), 1);
 taken_velocity(1) = start_velocity;
-global taken_best;
 taken_best = zeros(constant("global_steps"), 1);
 taken_best(1) = 0;
 

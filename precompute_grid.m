@@ -20,7 +20,7 @@ min_x_in = min(innerConePosition(:,1)); min_y_in = min(innerConePosition(:,2));
 max_x_out = max(outerConePosition(:,1)); max_y_out = max(outerConePosition(:,2));
 min_x_out = min(outerConePosition(:,1)); min_y_out = min(outerConePosition(:,2));
 % spacing of the grid
-spacing = 10000;
+spacing = 2000;
 % size in x and y coordinates
 x_size = max(max_x_in, max_x_out) - min(min_x_in, min_x_out);
 y_size = max(max_y_in, max_y_out) - min(min_y_in, min_y_out);
@@ -38,8 +38,11 @@ progresses = zeros(spacing,spacing);
 [test_path_x, test_path_y] = generate_track(innerConePosition, outerConePosition);
 % precomputing the distances and progresses
 for i = 1:spacing
+    if mod(i, 100) == 0
+            i
+        end
     for j = 1:spacing
-        [progresses(i, j), distances(i, j)] = find_closest_point_on_the_line([x(i), y(j)], test_path_x, test_path_y, 0);        
+        [progresses(i, j), distances(i, j)] = find_closest_point_on_the_line([x(i), y(j)], test_path_x, test_path_y, 0);
     end
 end
 
