@@ -104,7 +104,6 @@ for a = 2:constant("global_steps")
     taken_velocity(a) = velocities(2);
     taken_acceleration(a) = best_a;
     taken_best(a) = best;
-
 end
 
 % plotting all the curves

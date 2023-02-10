@@ -5,7 +5,7 @@ Dilemma
     2. or we can just follow the istructions using the horizon that we have as the final movement
     of the model.
     
-    We have to choose what we want to do.
+    We have to choose what we want to do...
 
 
 ### Version 1.0
