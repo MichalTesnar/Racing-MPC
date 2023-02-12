@@ -1,5 +1,5 @@
 % setup
-clear all; clc;
+clear; clc;
 close all; drawnow;
 
 load("precompute_grid.mat")
@@ -23,55 +23,51 @@ w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 % steering maximum 45 degrees: pi/4, multiplied and divided by 10 to have more granularity
 % steering change: maximum pi/8 per step
 % lateral acceleration: to be determined
-keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer"];
-valueSet = [0.01  w         60       2000            1                24         5                   5            10*pi/4              100000          10*pi/2];
+keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer", "intervals"];
+valueSet = [0.01   w        60       1500            1                24            5              5            pi/4               1000                  pi/2           20];
 constant = containers.Map(keySet, valueSet);
 
 % generating track
 [test_path_x, test_path_y] = generate_track(innerConePosition, outerConePosition);
 
-% starting position and velocity of the model
-start_x = (in_x(1)+out_x(1))/2;
-start_y = (in_y(1)+out_y(1))/2;
-start_theta = 0;
-start_velocity = 0;
-start_a = 0;
-
-% temporary variables to keep track of the progress
-best = 0; % best progress along the line
-best_v = 0; % best velocity to take
-best_omega = 0; % best omega to take
-best_x = double(zeros(constant("steps"), 1)); % best path we have taken in x coordinates
-best_y = double(zeros(constant("steps"), 1)); % best path we have taken in y coordinates
+% best variables
+best_omega = 0; % best turning angle
+best = 0;
+best_a = 0; % best velocity to take
 
 % storing the path we actually took by taking the first step
 taken_x = zeros(constant("global_steps"), 1);
-taken_x(1) = start_x;
+taken_x(1) = (in_x(1)+out_x(1))/2;
 taken_y = zeros(constant("global_steps"), 1);
-taken_y(1) = start_y;
+taken_y(1) = (in_y(1)+out_y(1))/2;
 taken_omega = zeros(constant("global_steps"), 1);
-taken_omega(1) = best_omega;
+taken_omega(1) = 0; % best omega to take
+taken_theta = zeros(constant("global_steps"), 1);
+taken_theta(1) = 0; % best theta
 taken_velocity = zeros(constant("global_steps"), 1);
-taken_velocity(1) = start_velocity;
+taken_velocity(1) = 1; % setting start velocity
+taken_acceleration = zeros(constant("global_steps"), 1);
+taken_acceleration(1) = 0;
 taken_best = zeros(constant("global_steps"), 1);
-taken_best(1) = 0;
-
-last_index = 0;
+taken_best(1) = 0; % best progress along the line
 
 % main loop
 for a = 2:constant("global_steps")
     best = -1;
-    search_from = taken_best(a-1); % index to search progress from
-    last_index = find_closest_point_on_the_line([start_x, start_y], test_path_x, test_path_y, last_index); % index to check path from
-    % pick velocity between limits and by braking and speeding up
-    for velocity = max(start_velocity-constant("max_brake"), constant("min_speed")):min(start_velocity + constant("max_acceleration"), constant("max_speed")) % try velocities
+    current_velocity = taken_velocity(a-1);
+    current_x = taken_x(a-1);
+    current_y = taken_y(a-1);
+    current_omega = taken_omega(a-1);
+    current_theta = taken_theta(a-1);
+
+    % pick acceleration between limits and by braking and speeding up
+    for acceleration = linspace((constant("min_speed") - current_velocity)/(constant("steps")*constant("tau")), (constant("max_speed") - current_velocity)/(constant("steps")*constant("tau")), constant("intervals"))/20
         % pick steering angle constrained by maximum lateral acceleration
-        % maximum_lateral_acceleration > omega*velocity <=> |omega| < maximum_lateral_acceleration/velocity
-            % also constrained by the possible rate of change and maximum range of steering
-        for omega = (max([-round(constant("lateral_acceleration")/velocity), -constant("max_steer"), taken_omega(a-1) - constant("steer_change")]):min([round(constant("lateral_acceleration")/velocity), taken_omega(a-1)*10 + constant("steer_change"), constant("max_steer")]))/10 % try angles
-%             max(-round(constant("lateral_acceleration")/velocity), start_theta - constant("steer_change")):min(round(constant("lateral_acceleration")/velocity), start_theta + constant("steer_change"))
+        % maximum_lateral_accelderation > omega*velocity <=> |omega| < maximum_lateral_acceleration/velocity
+        max_velocity = max(current_velocity + acceleration*constant("tau")*constant("steps"), current_velocity);
+        for omega = linspace(max([-round(constant("lateral_acceleration")/max_velocity), -constant("max_steer"), current_omega - constant("steer_change")]), min([round(constant("lateral_acceleration")/max_velocity), current_omega + constant("steer_change"), constant("max_steer")]), constant("intervals")) % try angles
             % predict model movement
-            [path_x, path_y, ~] = unicycle_model(velocity, omega, start_x, start_y, start_theta, constant("steps"), constant("tau"));
+            [path_x, path_y, ~, ~] = unicycle_model_acceleration(current_velocity, acceleration, omega, current_x, current_y, current_theta, constant("steps"), constant("tau"));
             % check if path is valid
             % make x and y into indices on the grid
             indices_x = floor((path_x-x_min)/x_size*spacing);
@@ -87,10 +83,8 @@ for a = 2:constant("global_steps")
                 distance = distances(indices_x(end), indices_y(end));
                 if progress > best % if better than maximum, then update the maximum and corresponding variables
                     best = progress;
-                    best_v = velocity;
+                    best_a = acceleration;
                     best_omega = omega;
-                    best_x = path_x;
-                    best_y = path_y;
                 end
             end
         end
@@ -101,33 +95,23 @@ for a = 2:constant("global_steps")
         break
     end
     % take the next step using the same model
-    [path_x, path_y, path_theta] = unicycle_model(best_v, best_omega, start_x, start_y, start_theta, 2, constant("tau"));
-    % update variables for the next cycle
-    start_x = path_x(2);
-    start_y = path_y(2);
-    start_theta = path_theta(2);
-    start_velocity = best_v;
+    [path_x, path_y, path_theta, velocities] = unicycle_model_acceleration(current_velocity, best_a, best_omega, current_x, current_y, current_theta, 2, constant("tau"));
     % save variables to keep track of the model
-    taken_x(a) = start_x;
-    taken_y(a) = start_y;
+    taken_x(a) = path_x(2);
+    taken_y(a) = path_y(2);
     taken_omega(a) = best_omega;
-    taken_velocity(a) = best_v;
+    taken_theta(a) = path_theta(2);
+    taken_velocity(a) = velocities(2);
+    taken_acceleration(a) = best_a;
     taken_best(a) = best;
-
 end
 
 % plotting all the curves
 figure
-
-% reference path to follow
-plot(test_path_x, test_path_y, 're', 'MarkerSize',5);
+plot(test_path_x, test_path_y, 're', 'MarkerSize',5); % reference path to follow
 hold on
-
-% boundaries
-plot(innerConePosition(:,1),innerConePosition(:,2),'ye','MarkerSize',5)
+plot(innerConePosition(:,1),innerConePosition(:,2),'ye','MarkerSize',5) % boundaries
 hold on
 plot(outerConePosition(:,1),outerConePosition(:,2),'bl','MarkerSize',5)
 hold on
-
-% path the model took: color = speed, size = change in angle
-scatter(taken_x, taken_y, 60*abs(taken_omega)+1, taken_velocity+1, 'filled');
+scatter(taken_x, taken_y, 60*abs(taken_omega)+1, taken_velocity+1, 'filled'); % path the model took: color = speed, size = change in angle

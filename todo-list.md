@@ -1,16 +1,21 @@
 # Work it harder, make it better...
 
 ## Meeting Notes
-- discuss news:
-    - Kosinka's Grid
-    - acceleration based model: problem
-- resolving the concept dilemma: path-following?
+- Kosinka's Grid
+- acceleration based model: problem with decelleration, crashing all the time
+    - solution: letting accelerate more and less and ceiling the model with maximum and minimum
+- idea: we could not fit one (acc, omega) to the track in long lookaheads -> combination of shorter search horizons
+    - recursive call function, fun to implement -> still inefficient needs optimization
+    - crazy time complexity: O(steps in one horizon*((sample rate of acc * sample rate of omega)^horizons))
+        - steps is fine, but to get 4 horizons, I have to have intervals < 3
+        - for 3 horizons, intervals = 5 is feasible
+    - increasing tau to increase lookahead for each horizon
+        - AMZ uses 0.05*40 = 2 seconds ahead
+- resolving the concept dilemma: path-following or going on the fly?
+
 
 ## To-do list
-
-
-- more complicated search profile in v and omega
-    - combination of shorter search horizons
+- ...
     
 ## To implement later
 - steering: balancing constants / tuning the parameters
