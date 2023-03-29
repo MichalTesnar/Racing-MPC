@@ -1,6 +1,7 @@
 % setup
 clear; clc;
 close all; drawnow;
+
 % loading Kosinka Grid and making the variables global
 load("precompute_grid.mat")
 global x_min_here; x_min_here = x_min; global y_min_here; y_min_here = y_min; global spacing_here; spacing_here = spacing; global x_size_here; x_size_here = x_size; global y_size_here; y_size_here = y_size;
@@ -20,7 +21,7 @@ w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 
 % constants hashmap, which is also made global
 keySet = ["tau", "width", "steps", "horizons", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer", "intervals"];
-valueSet = [0.05   w        10          4         600          1                100            12              12            pi/6               50                  pi/3           3];
+valueSet = [0.01   w        50         3         1500          1                100            12              12            pi/6               50                  pi/3           3];
 global constant; constant = containers.Map(keySet, valueSet);
 
 % best choices at given moment: turning angle, progress along the line, acceleration
@@ -36,7 +37,7 @@ taken_acceleration = zeros(constant("global_steps"), 1); taken_acceleration(1) =
 taken_best = zeros(constant("global_steps"), 1); taken_best(1) = 0; % best progress along the line
 
 % bool to plot or not
-plot_meanwhile = 0;
+plot_meanwhile = 1;
 % plot the track to watch the car on
 if plot_meanwhile == 1
     figure; plot(test_path_x, test_path_y, 're', 'MarkerSize',5);
