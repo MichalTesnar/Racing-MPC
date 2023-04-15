@@ -17,7 +17,7 @@ out_x = outerConePosition(:,1); out_y = outerConePosition(:,2);
 w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 % constants hashmap, which is also made global
 keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer", "intervals"];
-valueSet = [0.05   w         10           3000          1                40            6              1            pi/6               50                  pi/2           3];
+valueSet = [0.025   w         80           3000          1                20            6              6            pi/6               50                  pi/2           3];
 global constant; constant = containers.Map(keySet, valueSet);
 
 r_acceleration = repelem(3, constant("steps"));
@@ -64,7 +64,7 @@ b = [];
 A = [];
 Aeq = [];
 beq = [];
-nonlcon = @tracking;
+nonlcon = [];
 % options = optimoptions("fmincon","Algorithm","interior-point",...
 %     "EnableFeasibilityMode",true,...
 %     "SubproblemAlgorithm","cg",'FiniteDifferenceStepSize',1);
@@ -72,12 +72,12 @@ nonlcon = @tracking;
 % options = optimoptions('fmincon');
 options = optimoptions("fmincon","Algorithm","interior-point",...
     "EnableFeasibilityMode",true,...
-    "SubproblemAlgorithm","cg",'FiniteDifferenceStepSize',1, ...
-    "OptimalityTolerance", 0.5, ...
-    "FunctionTolerance", 0.5, ...
-    "StepTolerance", 0.0001);
+    "SubproblemAlgorithm","cg",'FiniteDifferenceStepSize',0.5) %, ...
+%     "OptimalityTolerance", 0.5, ...
+%     "FunctionTolerance", 0.5, ...
+%     "StepTolerance", 0.0001);
 % [options.OptimalityTolerance,options.FunctionTolerance,options.StepTolerance]
-% return;
+% re63turn;
 
 for i = 1:constant("global_steps")
     [u, value, exitflag] = fmincon(fun,u0,A,b,Aeq,beq,lb,ub,nonlcon,options);
@@ -102,10 +102,7 @@ for i = 1:constant("global_steps")
 end
 
 function [c,ceq] = tracking(u)
-global x0; global constant;
-[saved_positions_x, saved_positions_y, saved_theta, saved_velocities] = states(x0, u, constant("tau"));
-c = [];
-ceq = track_constraint(saved_positions_x, saved_positions_y, saved_theta, saved_velocities, constant("width"));
+
 end
 
 function cost = cost_wrapper(u_vector)
@@ -116,6 +113,8 @@ cost = cost_function(saved_positions_x, saved_positions_y, saved_theta, saved_ve
 end
 
 function cost = cost_function(new_path_x, new_path_y, saved_theta, saved_velocities)
+global x0; global constant;
+track = track_constraint(new_path_x, new_path_y, saved_theta, saved_velocities, constant("width"));
 % % load the data
 % load("precompute_grid.mat")
 % unpack the state
@@ -129,6 +128,11 @@ if last_index_x > 0 && last_index_x < spacing_here && last_index_y < spacing_her
 else
     cost = 100000 - abs(last_index_x - spacing_here/2) - abs(last_index_y - spacing_here/2);
 end
+% "a is"
+% track
+% cost
+% track
+cost = 100*cost + track;
 end
 
 function passed = track_constraint(new_path_x, new_path_y, positions_theta, velocities, w)
@@ -142,17 +146,15 @@ passed = 0;
 % check if they fit onto the grid
 if max(indices_x) > spacing_here || min(indices_x) < 1 || max(indices_y) > spacing_here || min(indices_y) < 1
 %     passed = 100000; %- abs(max(indices_x) - spacing_here/2) - abs(max(indices_y) - spacing_here/2);
-    passed = 100000 - abs(max(indices_x) - spacing_here/2) - abs(max(indices_y) - spacing_here/2);
-    return;
+    passed = passed + 10000*(abs(max(indices_x) - spacing_here/2) + abs(max(indices_y) - spacing_here/2));
 % check if they are on the track
-elseif max(distances_here(sub2ind([spacing_here, spacing_here],indices_x,indices_y))) > w
-    %passed = 100000; %max(passed, 1000*max(distances_here(sub2ind([spacing_here, spacing_here],indices_x,indices_y))));
-    passed = max(passed, 1000*max(distances_here(sub2ind([spacing_here, spacing_here],indices_x,indices_y))));
-    return;
-elseif max(velocities) > constant("max_speed") || min(velocities) < constant("min_speed")
-    passed = 1000*(max(abs(max(velocities)-constant("max_speed")), min(velocities) - constant("min_speed")));
-    return;
-else
-    passed = 0;
+else %max(indices_x) < spacing_here && min(indices_x) > 1 && max(indices_y) < spacing_here && min(indices_y) > 1 && max(distances_here(sub2ind([spacing_here, spacing_here],indices_x,indices_y))) > w
+    passed = passed + exp((5 + max(distances_here(sub2ind([spacing_here, spacing_here],indices_x,indices_y)))));
+    
 end
+if max(velocities) > constant("max_speed") || min(velocities) < constant("min_speed")
+    passed = passed + 100000*((abs(max(velocities)-constant("max_speed")) + abs(min(velocities) - constant("min_speed"))));
+end
+% "passed is"
+% passed
 end
