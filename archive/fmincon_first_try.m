@@ -1,3 +1,4 @@
+% first try in implementing fmincon, which party failed
 % load the data
 load("precompute_grid.mat")
 global x_min_here; x_min_here = x_min; global y_min_here; y_min_here = y_min; global spacing_here; spacing_here = spacing; global x_size_here; x_size_here = x_size; global y_size_here; y_size_here = y_size;
