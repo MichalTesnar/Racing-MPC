@@ -11,7 +11,7 @@ w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 
 % constants hashmap, which is also made global
 keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer"];
-valueSet = [0.04   w        50           1000          0            20            6              6            pi/6               50                  pi/2];
+valueSet = [0.02   w        50           1000          0            20            6              6            pi/6               50                  pi/2];
 global constant; constant = containers.Map(keySet, valueSet);
 % state vector
 global x0; x0 = [(in_x(1)+out_x(1))/2, (in_y(1)+out_y(1))/2, 0, 10]; % starting position + warm-start on speed
