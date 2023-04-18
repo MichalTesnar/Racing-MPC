@@ -11,14 +11,13 @@ w = sqrt((in_x(1)-out_x(1))^2+(in_y(1)-out_y(1))^2);
 
 % constants hashmap, which is also made global
 keySet = ["tau", "width", "steps", "global_steps", "min_speed", "max_speed", "max_acceleration", "max_brake", "steer_change", "lateral_acceleration", "max_steer"];
-valueSet = [0.02   w        100           1000          0            20            6              6            pi/6               50                  pi/2];
+valueSet = [0.04   w        50           1000          0            20            6              6            pi/6               50                  pi/2];
 global constant; constant = containers.Map(keySet, valueSet);
 % state vector
-global x0; x0 = [(in_x(1)+out_x(1))/2 + 15, (in_y(1)+out_y(1))/2, 0, 10]; % starting position + warm-start on speed
+global x0; x0 = [(in_x(1)+out_x(1))/2, (in_y(1)+out_y(1))/2, 0, 10]; % starting position + warm-start on speed
 % optimization command vector
 r_acceleration = repelem(3, constant("steps")); r_omega = repelem(0, constant("steps"));
-u0 = horzcat(r_acceleration, r_omega); 
-% skipping lateral acceleration for now
+u0 = horzcat(r_acceleration, r_omega);
 [test_path_x, test_path_y] = generate_track(innerConePosition, outerConePosition);
 % initiate plotting
 figure; plot(test_path_x, test_path_y, 're', 'MarkerSize',5);
@@ -65,7 +64,7 @@ function cost = cost_wrapper(u_vector)
 global x0; global constant
 [saved_positions_x, saved_positions_y, saved_theta, saved_velocities] = states(x0, u_vector, constant("tau"));
 progress = cost_function(saved_positions_x, saved_positions_y, saved_theta, saved_velocities);
-track = track_constraint(saved_positions_x, saved_positions_y, saved_theta, saved_velocities, constant("width"));
+track = track_constraint(saved_positions_x, saved_positions_y, saved_theta, saved_velocities, u_vector);
 cost = 100*progress + track;
 end
 
@@ -85,7 +84,7 @@ end
 end
 
 % track limits
-function passed = track_constraint(new_path_x, new_path_y, positions_theta, velocities, w)
+function passed = track_constraint(new_path_x, new_path_y, positions_theta, velocities, u_vector)
 global x_min_here; global y_min_here; global spacing_here;
 global x_size_here; global y_size_here; global distances_here;
 global constant;
@@ -101,5 +100,9 @@ else % check if they are on the track
 end
 if max(velocities) > constant("max_speed") || min(velocities) < constant("min_speed") % check velocity
     passed = passed + 100000*((abs(max(velocities)-constant("max_speed")) + abs(min(velocities) - constant("min_speed"))));
+end
+% lateral acceleration constraint: maximum_lateral_accelleration > omega*velocity
+if max(abs(u_vector(constant("steps")+1:end).*velocities)) > constant("lateral_acceleration")
+    passed = passed + 1000*abs(max(abs(u_vector(constant("steps")+1:end).*velocities)) - constant("lateral_acceleration"));
 end
 end

@@ -69,7 +69,7 @@ for a = 2:constant("global_steps")
     % pick acceleration between limits and by braking and speeding up
     for acceleration = linspace(-constant("max_brake"), constant("max_acceleration"), constant("intervals"))
         % pick steering angle constrained by maximum lateral acceleration
-        % maximum_lateral_accelderation > omega*velocity <=> |omega| < maximum_lateral_acceleration/velocity
+        % maximum_lateral_accelleration > omega*velocity <=> |omega| < maximum_lateral_acceleration/velocity
         max_velocity = max(current_velocity + acceleration*constant("tau")*constant("steps"), current_velocity);
         for omega = linspace(max([-round(constant("lateral_acceleration")/max_velocity), -constant("max_steer"), current_omega - constant("steer_change")]), min([round(constant("lateral_acceleration")/max_velocity), current_omega + constant("steer_change"), constant("max_steer")]), constant("intervals")) % try angles
             % predict model movement
