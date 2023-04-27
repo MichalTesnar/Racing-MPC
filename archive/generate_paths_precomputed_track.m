@@ -118,4 +118,5 @@ plot(innerConePosition(:,1),innerConePosition(:,2),'ye','MarkerSize',5) % bounda
 hold on
 plot(outerConePosition(:,1),outerConePosition(:,2),'bl','MarkerSize',5)
 hold on
-scatter(taken_x, taken_y, 60*abs(taken_omega)+1, taken_velocity+1, 'filled'); % path the model took: color = speed, size = change in angle
+% scatter(taken_x, taken_y, 60*abs(taken_omega)+1, taken_velocity+1, 'filled'); % path the model took: color = speed, size = change in angle
+scatter(taken_x, taken_y, 30, taken_velocity+1, 'filled'); % path the model took: color = speed, size = change in angle
