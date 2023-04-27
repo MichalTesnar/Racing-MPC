@@ -7,12 +7,11 @@ In this project, we are trying to utilize model predictive control in order to m
 - Matlab Optimization Toolbox version 9.4.
 
 ## What to run?
-Firstly, go to /utils 
-Currently you can directly execute the file `generate_paths_real_track.m` and all the magic should happen.
+Firstly, go to `/utils` and run `precompute_grid.m`. Then comeback to the main folder, execute the file `no_noncon.m` and all the magic should happen.
 
 ## Mentions & Contributions
-This project is part of Honours College of Rijksuniversiteit Groningen, carried out as a second-year project.
+This project is part of Honours College of Rijksuniversiteit Groningen, carried out as a second-year project in 2022/23.
 author: Michal Tešnar
-supervisors: Bart Besselink, Bahadir Saltik
+supervisors: Bart Besselink
 
 honorable mentions: Jiri Kosinka, for quick consultations
