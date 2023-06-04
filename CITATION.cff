@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Tesnar
+    given-names: Michal
+title: Racing MPC
+version: 1.0
+doi: 10.5281/zenodo.7802705
+date-released: 2023-06-04
